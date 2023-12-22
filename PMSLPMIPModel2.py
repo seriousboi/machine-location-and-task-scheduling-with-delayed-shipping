@@ -12,6 +12,7 @@ class PMSLPMIPModel2:
         self.starts = None
 
         self.getContinuousModel()
+        self.status = None
 
     def getContinuousModel(self):
         instance = self.instance
@@ -99,6 +100,10 @@ class PMSLPMIPModel2:
         return model,setup,affectations,starts,lateness
 
     def getSolution(self):
+        if self.status not in [OptimizationStatus.OPTIMAL,OptimizationStatus.FEASIBLE]:
+            print("No feasable solution found")
+            return
+             
         installations = []
         for locationIndex in range(self.instance.nbLocations):
             if self.setup[locationIndex].x >= 0.99:
@@ -121,4 +126,4 @@ class PMSLPMIPModel2:
     def solve(self,maxTime=10,talking=False):
         self.model.max_seconds = maxTime
         self.model.verbose = talking
-        self.model.optimize()
+        self.status = self.model.optimize()

@@ -11,6 +11,7 @@ class PMSLPMIPModel1:
         self.affectations = None
         self.starts = None
 
+
         #fixe le nombre de période si rien n'est donné en paramètre
         if periodsAmount == None:
             self.periodsAmount = floor(instance.latestStart)
@@ -21,6 +22,7 @@ class PMSLPMIPModel1:
             self.periodsAmount = periodsAmount
 
         self.getPeriodModel()
+        self.status = None
 
     def getPeriodModel(self):
         instance = self.instance
@@ -109,6 +111,10 @@ class PMSLPMIPModel1:
 
 
     def getSolution(self):
+        if self.status not in [OptimizationStatus.OPTIMAL,OptimizationStatus.FEASIBLE]:
+            print("No feasable solution found")
+            return
+
         installations = []
         for locationIndex in range(self.instance.nbLocations):
             if self.setup[locationIndex].x >= 0.99:
@@ -132,4 +138,4 @@ class PMSLPMIPModel1:
     def solve(self,maxTime=10,talking=False):
         self.model.max_seconds = maxTime
         self.model.verbose = talking
-        self.model.optimize()
+        self.status = self.model.optimize()
