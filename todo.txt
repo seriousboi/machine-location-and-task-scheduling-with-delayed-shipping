@@ -1,1 +1,5 @@
-ajuster big M (il manque max rjk)
+mentionner dans le rapport que l'intégralité des périodes écarte l'optimum
+fichier d'appel général
+tests
+rédiger résultats
+vérifier que le fichier de solution output a la bonne indexation

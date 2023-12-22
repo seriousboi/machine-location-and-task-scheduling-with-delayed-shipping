@@ -76,6 +76,13 @@ class PMSLPData:
 
         self.computeDistances()
 
+        self.latestStart = 0
+        for taskIndex in range(self.nbTasks):
+            for locationIndex in range(self.nbLocations):
+                start = self.distances[locationIndex][taskIndex]/self.travelSpeed
+                if start > self.latestStart:
+                    self.latestStart = start
+
     def computeDistances(self):
         self.distances = []
         for locationIndex in range(self.nbLocations):

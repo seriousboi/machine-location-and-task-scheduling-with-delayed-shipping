@@ -1,17 +1,22 @@
 from PMSLPData import *
 from PMSLPSolution import *
-from models import *
+from PMSLPMIPModel1 import *
+from PMSLPMIPModel2 import *
 
 
 testInstance = PMSLPData("Instances/A_instances/A_instance_2_2_0.dat")
 testInstance.print()
-
-solveObject = PMSLPMIPModel2(testInstance)
-maxTime = 1200
-verbose = True
-testSolution = solveObject.solve(maxTime,verbose)
 print()
-testSolution.print()
+
+model = PMSLPMIPModel2(testInstance)
+
+
+maxTime = 3000
+verbose = True
+model.solve(maxTime,verbose)
+
+sol = model.getSolution()
+sol.print()
 
 
 #la solution n'est pas valide, c'est juste un test pour voir l'écriture dans les fichier

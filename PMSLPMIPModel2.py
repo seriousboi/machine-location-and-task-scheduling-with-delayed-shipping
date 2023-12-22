@@ -2,9 +2,16 @@ from PMSLPSolution import *
 from mip import *
 
 
+
 class PMSLPMIPModel2:
     def __init__(self,instance):
         self.instance = instance
+        self.model = None
+        self.setup = None
+        self.affectations = None
+        self.starts = None
+
+        self.getContinuousModel()
 
     def getContinuousModel(self):
         instance = self.instance
@@ -44,7 +51,6 @@ class PMSLPMIPModel2:
             lateness += [model.add_var(name="T_"+str(taskIndex),var_type=CONTINUOUS,lb=0)]
 
         #fonction objectif
-        # /!\ définir distances /!\
         model.objective = minimize( instance.openingWeight*xsum(setup[locationIndex]*instance.fixedCosts[locationIndex] for locationIndex in range(instance.nbLocations)) +
                                     instance.travelWeight*xsum(xsum(affectations[taskIndex][locationIndex]*instance.distances[locationIndex][taskIndex]*instance.travelCost for taskIndex in range(instance.nbTasks)) for locationIndex in range(instance.nbLocations)) +
                                     instance.tardinessPenalty*xsum( lateness[taskIndex] for taskIndex in range(instance.nbTasks)) )
@@ -67,10 +73,9 @@ class PMSLPMIPModel2:
                 for locationIndex in range(instance.nbLocations):
                     model += (preceding[taskIndex1][taskIndex2]+preceding[taskIndex2][taskIndex1] >= affectations[taskIndex1][locationIndex]+affectations[taskIndex2][locationIndex]-1)
 
-        bigM = 0
+        bigM = instance.latestStart
         for taskIndex in range(instance.nbTasks):
             bigM += instance.durations[taskIndex]
-        # /!\ on doit ajouter la plus longue date de dispo
 
         #contrainte, une machine ne peut pas faire deux tâches en même temps
         for taskIndex1 in range(instance.nbTasks):
@@ -87,33 +92,33 @@ class PMSLPMIPModel2:
         for taskIndex in range(instance.nbTasks):
             model += (starts[taskIndex] >= xsum(affectations[taskIndex][locationIndex]*instance.distances[locationIndex][taskIndex]/instance.travelSpeed for locationIndex in range(instance.nbLocations)))
 
+        self.model = model
+        self.setup = setup
+        self.affectations = affectations
+        self.starts = starts
         return model,setup,affectations,starts,lateness
 
-    def getSolution(self,setup,affectations,starts,lateness):
+    def getSolution(self):
         installations = []
         for locationIndex in range(self.instance.nbLocations):
-            if setup[locationIndex].x >= 0.99:
+            if self.setup[locationIndex].x >= 0.99:
                 installations += [locationIndex]
 
         affectationsRes = [None]*self.instance.nbTasks
         startDates = [None]*self.instance.nbTasks
         for taskIndex in range(self.instance.nbTasks):
-            startDates[taskIndex] = starts[taskIndex].x
+            startDates[taskIndex] = self.starts[taskIndex].x
             for locationIndex in range(self.instance.nbLocations):
-                if affectations[taskIndex][locationIndex].x >= 0.99:
+                if self.affectations[taskIndex][locationIndex].x >= 0.99:
                     affectationsRes[taskIndex] = locationIndex
 
                     #travelTime = self.instance.distances[locationIndex][taskIndex]/self.instance.travelSpeed #debug
                     #print("Lateness",taskIndex,":",round(lateness[taskIndex].x,1)) #debug
                     #print("start:",round(starts[taskIndex].x,1),"duration:",round(self.instance.durations[taskIndex],1),"travel:",round(travelTime,1),"d+t:",round(travelTime+self.instance.durations[taskIndex],1),"duedate:",round(self.instance.duedates[taskIndex],1)) #debug
 
-
         return PMSLPSolution(self.instance,installations,affectationsRes,startDates)
 
     def solve(self,maxTime=10,talking=False):
-        model,setup,affectations,starts,lateness = self.getContinuousModel()
-        model.max_seconds = maxTime
-        model.verbose = talking
-        model.optimize()
-
-        return self.getSolution(setup,affectations,starts,lateness)
+        self.model.max_seconds = maxTime
+        self.model.verbose = talking
+        self.model.optimize()
