@@ -1,3 +1,4 @@
+from math import ceil
 
 
 class PMSLPSolution:
@@ -11,20 +12,22 @@ class PMSLPSolution:
         self.travelValue = None
         self.latenessValue = None
 
-    def print(self):
+    def print(self,onlyValue = False):
         self.computeValue()
         print("cost:",round(self.value,1))
         print("lateness cost:",round(self.latenessValue,1))
         print("travel cost:",round(self.travelValue,1))
         print("opening cost:",round(self.openingValue,1))
         print()
-        line = "Locations opened: "
-        for installation in self.installations:
-            line += str(installation)+" "
-        print(line,"\n")
 
-        for taskIndex in range(self.instance.nbTasks):
-            print("Task",taskIndex,"in",self.affectations[taskIndex],"at",round(self.startDates[taskIndex],1))
+        if not onlyValue:
+            line = "Locations opened: "
+            for installation in self.installations:
+                line += str(installation)+" "
+            print(line,"\n")
+
+            for taskIndex in range(self.instance.nbTasks):
+                print("Task",taskIndex,"in",self.affectations[taskIndex],"at",round(self.startDates[taskIndex],1))
 
     def computeValue(self):
         if self.value != None:
@@ -57,10 +60,12 @@ class PMSLPSolution:
         self.value = self.openingValue+self.travelValue+self.latenessValue
 
     #writes solution in a file
-    def outputSolution(self,outputFile):
+    def outputSolution(self,outputFile=None):
+        if  outputFile == None:
+            outputFile = "j"+str(self.instance.nbTasks)+"_k"+str(self.instance.nbLocations)+"_m"+str(self.instance.nbMachines)+".sol"
         lines = []
         for taskIndex in range(self.instance.nbTasks):
-            line = str(self.affectations[taskIndex])+" "+str(self.startDates[taskIndex])+"\n"
+            line = str(self.affectations[taskIndex]+1)+" "+str(ceil(self.startDates[taskIndex]))+"\n"
             lines += [line]
         file= open(outputFile,"w")
         file.writelines(lines)

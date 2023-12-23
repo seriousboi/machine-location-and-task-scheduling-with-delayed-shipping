@@ -114,6 +114,10 @@ class PMSLPMIPModel1:
         if self.status not in [OptimizationStatus.OPTIMAL,OptimizationStatus.FEASIBLE]:
             print("No feasable solution found")
             return
+        elif self.status == OptimizationStatus.FEASIBLE:
+            print("Not Optimal")
+        elif self.status == OptimizationStatus.OPTIMAL:
+            print("Optimal")
 
         installations = []
         for locationIndex in range(self.instance.nbLocations):

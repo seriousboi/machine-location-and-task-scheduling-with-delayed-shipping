@@ -3,6 +3,7 @@ from PMSLPData import *
 from PMSLPSolution import *
 from PMSLPMIPModel1 import *
 from PMSLPMIPModel2 import *
+from PMSLPHeuristic import *
 
 
 filePath = sys.argv[1]
@@ -21,6 +22,7 @@ if methodName == "MIP1":
     solution = model.getSolution()
     if solution != None:
         solution.print()
+        solution.outputSolution()
 
 elif methodName == "MIP2":
     instance = PMSLPData(filePath)
@@ -32,8 +34,15 @@ elif methodName == "MIP2":
     solution = model.getSolution()
     if solution != None:
         solution.print()
+        solution.outputSolution()
 
 elif methodName == "H":
-    print("Pas d'heuristique")
+    instance = PMSLPData(filePath)
+    instance.print()
+    print()
+    heur = PMSLPHeuristic(instance)
+    solution = heur.solve(maxTime)
+    solution.print()
+
 else:
     print("Unkown method name")
